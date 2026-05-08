@@ -3,6 +3,8 @@ import { useEffect, useMemo, useState } from "react";
 const VIDEO_SECONDS = 40;
 const SCENE_SECONDS = 5;
 const TOTAL_SCENES = 8;
+const SAVED_PACK_KEY = "saved_current_video_pack_v2";
+const SAVED_SETTINGS_KEY = "saved_video_settings_v2";
 const NL = String.fromCharCode(10);
 const DOUBLE_NL = NL + NL;
 
@@ -188,13 +190,185 @@ const STYLES = {
   },
 };
 
-const CHANNEL_STYLES = [
-  "dark cinematic finance thriller",
-  "viral money mystery story",
-  "Indian middle-class finance story",
-  "clean 2D cartoon finance explainer",
-  "dramatic black stick-figure money story",
+const LANGUAGES = [
+  { code: "en", label: "English" },
+  { code: "hi", label: "Hindi" },
+  { code: "hinglish", label: "Hindi + English" },
 ];
+
+const NICHES = [
+  {
+    name: "Kids 3D Stories",
+    focus: "viral 3D animated kids stories, emotional lessons, funny moments, colorful worlds, friendship, adventure, magical storytelling",
+    hashtags: "#KidsAnimation #3DStory #Cartoon #AnimatedShorts #KidsVideo #Shorts",
+  },
+  {
+    name: "AI Horror Stories",
+    focus: "dark suspense, horror twists, creepy storytelling, survival tension, cinematic fear moments",
+    hashtags: "#HorrorStory #ScaryShorts #AIHorror #Suspense #DarkStory #Shorts",
+  },
+  {
+    name: "Brainrot Comedy",
+    focus: "chaotic humor, absurd storytelling, meme edits, internet humor, fast comedy pacing",
+    hashtags: "#Brainrot #ComedyShorts #FunnyVideos #MemeContent #ViralShorts #Shorts",
+  },
+  {
+    name: "Motivation Stories",
+    focus: "self-improvement, discipline, hard work, emotional comeback stories, success mindset",
+    hashtags: "#Motivation #SuccessMindset #Discipline #SelfImprovement #Inspiration #Shorts",
+  },
+  {
+    name: "Animal Stories",
+    focus: "cute animals, emotional pet moments, survival stories, funny animal adventures",
+    hashtags: "#AnimalStory #CuteAnimals #PetVideos #Wildlife #AnimalShorts #Shorts",
+  },
+  {
+    name: "Luxury Lifestyle",
+    focus: "rich lifestyle, expensive cars, luxury houses, billionaire mindset, high-end visuals",
+    hashtags: "#LuxuryLifestyle #MillionaireMindset #RichLife #LuxuryCars #Success #Shorts",
+  },
+  {
+    name: "Gaming Stories",
+    focus: "gaming suspense, survival gameplay stories, funny gamer moments, intense challenges",
+    hashtags: "#Gaming #GamingShorts #FunnyGaming #SurvivalGame #Streamer #Shorts",
+  },
+  {
+    name: "Mythical Stories",
+    focus: "dragons, gods, powers, fantasy worlds, magical battles, emotional fantasy storytelling",
+    hashtags: "#FantasyStory #Mythical #Dragons #MagicWorld #EpicStory #Shorts",
+  },
+  {
+    name: "Personal Finance",
+    focus: "salary, savings, spending habits, budgeting, and money discipline",
+    hashtags: "#PersonalFinance #MoneyTips #Savings #Budgeting #MoneyMindset #Shorts",
+  },
+  {
+    name: "Stock Market",
+    focus: "stocks, market fear, beginner investing mistakes, charts, and long-term thinking",
+    hashtags: "#StockMarket #Investing #Stocks #TradingPsychology #MoneyTips #Shorts",
+  },
+  {
+    name: "Crypto Finance",
+    focus: "crypto hype, risk, FOMO, market crashes, and smart caution",
+    hashtags: "#Crypto #CryptoEducation #MoneyTips #RiskManagement #FinanceShorts #Shorts",
+  },
+  {
+    name: "Business Stories",
+    focus: "founders, failed businesses, profit traps, business lessons, and money decisions",
+    hashtags: "#Business #BusinessStories #Entrepreneurship #MoneyLessons #Startup #Shorts",
+  },
+  {
+    name: "Debt & Credit",
+    focus: "credit cards, loans, EMI traps, interest, debt psychology, and repayment habits",
+    hashtags: "#DebtFree #CreditCard #EMI #MoneyTips #PersonalFinance #Shorts",
+  },
+  {
+    name: "Rich Mindset",
+    focus: "wealth habits, asset mindset, delayed gratification, and financial discipline",
+    hashtags: "#RichMindset #Wealth #FinancialFreedom #MoneyHabits #Investing #Shorts",
+  },
+];
+
+const NICHE_VISUAL_STYLES = {
+  "Kids 3D Stories": [
+    "Pixar-style colorful 3D animation",
+    "bright magical cartoon world",
+    "cute Disney-inspired cinematic lighting",
+    "vibrant toy-like 3D characters",
+    "soft colorful fantasy animation",
+  ],
+  "AI Horror Stories": [
+    "dark cinematic horror realism",
+    "creepy found footage style",
+    "analog horror atmosphere",
+    "dark abandoned building aesthetic",
+    "sinister red shadow lighting",
+  ],
+  "Brainrot Comedy": [
+    "chaotic meme edit aesthetic",
+    "low quality internet meme style",
+    "absurd cartoon energy",
+    "hyperactive Gen Z edit style",
+    "random viral internet humor visuals",
+  ],
+  "Motivation Stories": [
+    "cinematic inspirational lighting",
+    "dark emotional success aesthetic",
+    "dramatic comeback story visuals",
+    "high contrast motivational cinematic style",
+    "powerful success montage style",
+  ],
+  "Animal Stories": [
+    "cute Disney animal animation",
+    "realistic wildlife cinematic look",
+    "soft emotional pet story visuals",
+    "high-detail jungle adventure style",
+    "adorable 3D animal world",
+  ],
+  "Luxury Lifestyle": [
+    "ultra luxury cinematic visuals",
+    "golden billionaire aesthetic",
+    "expensive mansion cinematic look",
+    "supercar luxury edit style",
+    "high-end millionaire visuals",
+  ],
+  "Gaming Stories": [
+    "AAA video game cinematic style",
+    "competitive esports atmosphere",
+    "dark survival game aesthetic",
+    "high-energy streamer visuals",
+    "futuristic cyber gaming style",
+  ],
+  "Mythical Stories": [
+    "epic fantasy cinematic world",
+    "dragon kingdom visuals",
+    "magical god-like atmosphere",
+    "ancient mythology aesthetic",
+    "high fantasy adventure style",
+  ],
+  "Personal Finance": [
+    "dark cinematic finance thriller",
+    "viral money mystery story",
+    "Indian middle-class finance story",
+    "clean finance explainer visuals",
+    "dramatic finance documentary style",
+  ],
+  "Stock Market": [
+    "Wall Street cinematic aesthetic",
+    "stock market chart visuals",
+    "high tension trading atmosphere",
+    "financial documentary style",
+    "market crash cinematic look",
+  ],
+  "Crypto Finance": [
+    "cyberpunk crypto visuals",
+    "futuristic blockchain aesthetic",
+    "dark neon trading atmosphere",
+    "digital finance cinematic style",
+    "crypto millionaire visual style",
+  ],
+  "Business Stories": [
+    "startup documentary visuals",
+    "founder journey cinematic style",
+    "corporate storytelling aesthetic",
+    "high-stakes business visuals",
+    "office success cinematic look",
+  ],
+  "Debt & Credit": [
+    "dark debt trap atmosphere",
+    "stressful financial cinematic style",
+    "credit card horror aesthetic",
+    "emotional money struggle visuals",
+    "financial survival cinematic look",
+  ],
+  "Rich Mindset": [
+    "wealth mindset cinematic visuals",
+    "luxury success atmosphere",
+    "discipline and growth aesthetic",
+    "high-value billionaire visuals",
+    "clean millionaire lifestyle style",
+  ],
+};
 
 const STORY_STRUCTURES = [
   "money trap revelation",
@@ -232,6 +406,128 @@ const LOCATIONS = [
 const EMOTIONS = ["shocked", "stressed", "confused", "hopeful", "focused", "fearful", "motivated", "regretful", "determined", "emotionless"];
 
 const MONEY_OBJECTS = ["coins", "credit cards", "falling money", "salary notification", "investment graph", "shopping bags", "EMI papers", "subscription icons", "bank alerts", "wallet"];
+
+const HUMAN_CHARACTERS = [
+  "a fresher who just got his first salary",
+  "a student trying to look rich online",
+  "a delivery worker saving for a dream phone",
+  "a young office employee hiding his money stress",
+  "a small shop owner trying to survive the month",
+  "a college student learning money the hard way",
+  "a new trader who thinks profit is easy",
+  "a quiet employee who never talks about his debt",
+  "a creator earning money but spending faster",
+  "a middle-class guy trying to impress everyone",
+];
+
+const MONEY_PROBLEMS = [
+  "he checked his balance and felt his stomach drop",
+  "his account looked fine in the morning and empty by night",
+  "every small payment looked harmless until he added them together",
+  "his lifestyle was growing faster than his income",
+  "he was not broke because of one big mistake, but because of ten tiny ones",
+  "he kept saying next month will be different, but nothing changed",
+  "his money was leaving before he even understood where it went",
+  "he confused looking rich with actually becoming stable",
+  "he thought earning more would fix everything, but the leak stayed open",
+  "his phone was full of payment alerts, but his savings stayed zero",
+];
+
+const HUMAN_TURNS = [
+  "That is when he noticed the pattern.",
+  "Then one tiny detail exposed the whole problem.",
+  "The scary part was not the expense. It was how normal it felt.",
+  "For the first time, he stopped guessing and started checking.",
+  "The truth was uncomfortable, but it was useful.",
+  "He did not need motivation. He needed a system.",
+  "One notebook showed him what his bank app never explained.",
+  "The moment he wrote it down, the trap became visible.",
+];
+
+const FIX_ACTIONS = [
+  "he deleted one useless subscription",
+  "he waited 24 hours before buying anything non-urgent",
+  "he separated spending money from saving money",
+  "he tracked every payment for seven days",
+  "he stopped checking only monthly EMI and checked total cost",
+  "he made one rule: save first, spend later",
+  "he kept a small emergency amount untouched",
+  "he stopped buying things only to impress people",
+];
+
+const HUMAN_CTA = [
+  "Save this before your next salary disappears.",
+  "Follow for money stories that actually feel real.",
+  "Send this to someone who keeps saying, salary kahan gayi?",
+  "If this felt personal, your money system needs fixing.",
+  "Follow before the next money trap catches you.",
+];
+
+function buildHumanVoiceLines(topic, nicheName, language) {
+  const character = randomItem(HUMAN_CHARACTERS);
+  const problem = randomItem(MONEY_PROBLEMS);
+  const turn = randomItem(HUMAN_TURNS);
+  const fix = randomItem(FIX_ACTIONS);
+  const cta = randomItem(HUMAN_CTA);
+
+  const nicheScripts = {
+    "Personal Finance": [
+      ["Meet " + character + ". His salary came in at 9 AM, but by night he was already checking his balance twice.", "Socho " + character + ". Salary subah aayi, aur raat tak woh balance baar-baar check kar raha tha.", "एक कहानी सुनो: " + character + "। सुबह सैलरी आई, लेकिन रात तक वह बार-बार बैलेंस चेक कर रहा था।"],
+      ["The scary part? He did not buy anything huge. Just tiny payments that felt normal.", "Scary part ye tha ki usne kuch bada nahi kharida. Bas chhote payments the jo normal lag rahe the.", "डराने वाली बात ये थी कि उसने कुछ बड़ा नहीं खरीदा। बस छोटे-छोटे खर्चे थे जो नॉर्मल लग रहे थे।"],
+      ["One order, one subscription, one quick shopping deal... and the month started breaking.", "Ek order, ek subscription, ek quick shopping deal... aur month tootna start ho gaya.", "एक ऑर्डर, एक सब्सक्रिप्शन, एक छोटी शॉपिंग डील... और महीना बिगड़ना शुरू हो गया।"],
+      [turn + " His income was not the real problem. His untracked habits were.", turn + " Problem income nahi thi. Problem untracked habits thi.", turn + " असली समस्या इनकम नहीं थी। समस्या थी बिना ट्रैक की हुई आदतें।"],
+      ["He opened his notes app and wrote every spend for seven days.", "Usne notes app khola aur 7 din ka har spend likhna start kiya.", "उसने नोट्स ऐप खोला और सात दिन का हर खर्च लिखना शुरू किया।"],
+      ["That one boring habit showed him where his money was silently disappearing.", "Us boring habit ne dikha diya ki paisa chupke se kahan ja raha tha.", "उस एक बोरिंग आदत ने दिखा दिया कि पैसा चुपचाप कहाँ जा रहा था।"],
+      ["He did not become rich. But for the first time, the month stopped controlling him.", "Woh rich nahi bana. Lekin pehli baar month usko control nahi kar raha tha.", "वह अमीर नहीं बना। लेकिन पहली बार महीना उसे कंट्रोल नहीं कर रहा था।"],
+      ["Your money does not need drama. It needs direction. " + cta, "Paisa drama nahi maangta. Direction maangta hai. " + cta, "पैसे को ड्रामा नहीं, दिशा चाहिए। " + cta],
+    ],
+    "Crypto Finance": [
+      ["He saw one coin pumping and thought, this is my chance to become rich fast.", "Usne ek coin pump hota dekha aur socha, bas yahi chance hai rich banne ka.", "उसने एक कॉइन पंप होते देखा और सोचा, यही मौका है जल्दी अमीर बनने का।"],
+      ["He did not check the project. He did not check the risk. He only checked the green candle.", "Na project check kiya, na risk. Sirf green candle dekhi.", "उसने प्रोजेक्ट नहीं देखा, रिस्क नहीं देखा। बस ग्रीन कैंडल देखी।"],
+      ["Five minutes later, he entered. Ten minutes later, the chart stopped moving up.", "5 minute baad entry li. 10 minute baad chart upar jaana band ho gaya.", "पाँच मिनट बाद उसने एंट्री ली। दस मिनट बाद चार्ट ऊपर जाना बंद हो गया।"],
+      ["Then the group chat went silent, and his profit turned into panic.", "Phir group chat silent ho gaya, aur profit panic me badal gaya.", "फिर ग्रुप चैट शांत हो गया, और प्रॉफिट पैनिक में बदल गया।"],
+      ["That day he learned the most expensive crypto lesson: hype is not a strategy.", "Us din usne sabse expensive crypto lesson seekha: hype strategy nahi hoti.", "उस दिन उसने सबसे महंगा क्रिप्टो लेसन सीखा: हाइप कोई स्ट्रैटेजी नहीं होती।"],
+      ["Next time, he wrote three rules before buying: risk, reason, and exit.", "Next time usne buy karne se pehle 3 rules likhe: risk, reason, exit.", "अगली बार खरीदने से पहले उसने तीन नियम लिखे: रिस्क, रीजन और एग्जिट।"],
+      ["He still watched charts. But now he stopped chasing every candle like a lottery ticket.", "Woh charts abhi bhi dekhta tha. Lekin har candle ko lottery ticket samajhna band kar diya.", "वह चार्ट अब भी देखता था। लेकिन हर कैंडल को लॉटरी टिकट समझना बंद कर दिया।"],
+      ["Crypto can build wealth, but FOMO can burn it faster. " + cta, "Crypto wealth bana sakta hai, but FOMO usse fast jala sakta hai. " + cta, "क्रिप्टो वेल्थ बना सकता है, लेकिन FOMO उसे बहुत तेज़ जला सकता है। " + cta],
+    ],
+    "Business Stories": [
+      ["He opened a small business and thought sales meant success.", "Usne small business start kiya aur socha sales matlab success.", "उसने छोटा बिजनेस शुरू किया और सोचा कि सेल्स मतलब सक्सेस।"],
+      ["Every day customers came in, but somehow his bank balance stayed weak.", "Customers roz aa rahe the, but bank balance weak hi tha.", "हर दिन कस्टमर आ रहे थे, लेकिन बैंक बैलेंस फिर भी कमजोर था।"],
+      ["The problem was hidden in discounts, delivery cost, damaged stock, and unpaid credit.", "Problem discounts, delivery cost, damaged stock aur udhaar me chhupi thi.", "समस्या डिस्काउंट, डिलीवरी कॉस्ट, खराब स्टॉक और उधार में छिपी थी।"],
+      ["One night he realized: revenue was loud, but profit was whispering.", "Ek raat usko samajh aaya: revenue loud tha, profit whisper kar raha tha.", "एक रात उसे समझ आया: रेवेन्यू शोर कर रहा था, लेकिन प्रॉफिट धीरे बोल रहा था।"],
+      ["So he stopped asking, how much did I sell, and started asking, how much did I keep?", "Phir usne poochna band kiya kitna becha, aur poochna start kiya kitna bacha.", "फिर उसने ये पूछना बंद किया कि कितना बेचा, और पूछना शुरू किया कि कितना बचा।"],
+      ["He cut one loss-making offer, tracked cashflow, and stopped giving blind credit.", "Usne ek loss-making offer band kiya, cashflow track kiya, aur blind udhaar rok diya.", "उसने एक घाटे वाला ऑफर बंद किया, कैशफ्लो ट्रैक किया और अंधा उधार रोक दिया।"],
+      ["Sales dropped a little, but profit finally started breathing.", "Sales thodi kam hui, but profit finally breathe karne laga.", "सेल्स थोड़ी कम हुई, लेकिन प्रॉफिट आखिर सांस लेने लगा।"],
+      ["A business does not die when sales are low. It dies when profit is invisible. " + cta, "Business low sales se nahi marta. Invisible profit se marta hai. " + cta, "बिजनेस कम सेल्स से नहीं मरता। वह तब मरता है जब प्रॉफिट दिखता ही नहीं। " + cta],
+    ],
+    "Stock Market": [
+      ["He bought a stock because everyone online said it was going to explode.", "Usne stock buy kiya kyunki online sab bol rahe the explode karega.", "उसने स्टॉक खरीदा क्योंकि ऑनलाइन सब बोल रहे थे कि ये बहुत ऊपर जाएगा।"],
+      ["For two days the chart went up, and he started feeling like a genius.", "2 din chart upar gaya, aur usko laga woh genius hai.", "दो दिन चार्ट ऊपर गया और उसे लगा कि वह जीनियस है।"],
+      ["Then one red candle erased his confidence faster than his profit.", "Phir ek red candle ne profit se pehle confidence erase kar diya.", "फिर एक लाल कैंडल ने प्रॉफिट से भी तेज़ उसका कॉन्फिडेंस मिटा दिया।"],
+      ["The mistake was not buying. The mistake was buying without a reason.", "Mistake buy karna nahi tha. Mistake bina reason ke buy karna tha.", "गलती खरीदना नहीं था। गलती बिना वजह खरीदना था।"],
+      ["He stopped asking, will it go up, and started asking, why should it go up?", "Usne poochna band kiya upar jayega kya, aur poochna start kiya upar kyu jayega.", "उसने पूछना बंद किया कि ऊपर जाएगा क्या, और पूछना शुरू किया कि ऊपर क्यों जाएगा।"],
+      ["That one question saved him from three bad trades in one week.", "Ek question ne usko ek week me 3 bad trades se bacha liya.", "उस एक सवाल ने उसे एक हफ्ते में तीन खराब ट्रेड से बचा लिया।"],
+      ["He still invested, but now the chart was not controlling his emotions.", "Woh invest abhi bhi karta tha, but chart ab uske emotions control nahi karta tha.", "वह अब भी निवेश करता था, लेकिन चार्ट अब उसके इमोशन कंट्रोल नहीं करता था।"],
+      ["The market rewards patience more than excitement. " + cta, "Market excitement se zyada patience ko reward karta hai. " + cta, "मार्केट एक्साइटमेंट से ज़्यादा धैर्य को रिवॉर्ड करता है। " + cta],
+    ],
+    "Debt & Credit": [
+      ["He swiped the card once and told himself, I will pay it next month.", "Usne card swipe kiya aur bola next month pay kar dunga.", "उसने कार्ड स्वाइप किया और खुद से कहा, अगले महीने भर दूंगा।"],
+      ["Next month came, but so did another bill, another offer, and another excuse.", "Next month aaya, saath me bill, offer aur excuse bhi aa gaya.", "अगला महीना आया, लेकिन साथ में एक और बिल, एक और ऑफर और एक और बहाना भी आ गया।"],
+      ["The minimum payment looked helpful, but it quietly kept him inside the trap.", "Minimum payment helpful lag raha tha, but wahi trap ke andar rakh raha tha.", "मिनिमम पेमेंट मदद जैसा लग रहा था, लेकिन वही उसे ट्रैप में रख रहा था।"],
+      ["Soon he was not buying products. He was buying time with interest.", "Phir woh products nahi kharid raha tha. Woh interest ke saath time kharid raha tha.", "फिर वह प्रोडक्ट नहीं खरीद रहा था। वह ब्याज के साथ समय खरीद रहा था।"],
+      ["He finally listed every debt from smallest to most painful.", "Finally usne har debt list kiya, smallest se most painful tak.", "आखिर उसने हर कर्ज को लिखा, सबसे छोटे से सबसे दर्दनाक तक।"],
+      ["Then he attacked one payment at a time instead of panicking about all of them.", "Phir usne ek-ek payment attack ki, sabko dekhkar panic nahi kiya.", "फिर उसने एक-एक पेमेंट पर काम किया, सबको देखकर पैनिक नहीं किया।"],
+      ["The debt did not vanish in one day, but the fear started shrinking.", "Debt ek din me vanish nahi hua, but fear shrink hona start ho gaya.", "कर्ज एक दिन में गायब नहीं हुआ, लेकिन डर कम होना शुरू हो गया।"],
+      ["Credit is useful only when you control it. Otherwise, it controls you. " + cta, "Credit tab useful hai jab tum control karo. Warna woh tumhe control karta hai. " + cta, "क्रेडिट तभी काम का है जब कंट्रोल आपके हाथ में हो। वरना वह आपको कंट्रोल करता है। " + cta],
+    ],
+  };
+
+  const fallback = nicheScripts["Personal Finance"];
+  const selected = nicheScripts[nicheName] || fallback;
+  const langIndex = language === "hi" ? 2 : language === "hinglish" ? 1 : 0;
+  return selected.map((scene) => scene[langIndex]);
+}
 
 const CHARACTER_LOCK = [
   "MANDATORY CHARACTER LOCK: same whole black stick-figure character in every scene",
@@ -302,70 +598,136 @@ function makeSceneVideo(text) {
   ].join(" ");
 }
 
-function createFinanceShort(style) {
+function getSavedSettings() {
+  try {
+    const saved = localStorage.getItem(SAVED_SETTINGS_KEY);
+    return saved ? JSON.parse(saved) : null;
+  } catch {
+    return null;
+  }
+}
+
+function saveSettings(settings) {
+  try {
+    localStorage.setItem(SAVED_SETTINGS_KEY, JSON.stringify(settings));
+  } catch {
+    console.log("Settings storage unavailable");
+  }
+}
+
+function getSavedPack() {
+  try {
+    const saved = localStorage.getItem(SAVED_PACK_KEY);
+    return saved ? JSON.parse(saved) : null;
+  } catch {
+    return null;
+  }
+}
+
+function savePack(pack) {
+  try {
+    localStorage.setItem(SAVED_PACK_KEY, JSON.stringify(pack));
+  } catch {
+    console.log("Pack storage unavailable");
+  }
+}
+
+function humanizeLine(text, language) {
+  if (language === "hi") {
+    const map = {
+      "Your salary is not small. Your money is leaking. Most people notice it only when the account is almost empty.": "आपकी सैलरी छोटी नहीं है। असली दिक्कत ये है कि पैसा धीरे-धीरे लीक हो रहा है। ज़्यादातर लोगों को ये तब समझ आता है जब अकाउंट लगभग खाली हो चुका होता है।",
+      "Salary comes in. For one day, everything feels safe. Then the spending starts quietly.": "सैलरी आती है और एक दिन के लिए सब ठीक लगता है। फिर खर्चे चुपचाप शुरू हो जाते हैं।",
+      "Food orders, subscriptions, shopping, small EMIs... none look dangerous alone.": "फूड ऑर्डर, सब्सक्रिप्शन, शॉपिंग, छोटी-छोटी EMI... अकेले में कुछ भी खतरनाक नहीं लगता।",
+      "But together, they become a hole in your pocket that never stops growing.": "लेकिन ये सब मिलकर आपकी जेब में ऐसा छेद बना देते हैं जो बढ़ता ही जाता है।",
+      "He thought he needed more income. The truth was, he needed a money system.": "उसे लगा कि उसे ज़्यादा कमाई चाहिए। असल में उसे एक सही मनी सिस्टम चाहिए था।",
+      "So he tracked seven days of spending and found three silent leaks instantly.": "उसने सिर्फ सात दिन के खर्चे लिखे और तुरंत तीन ऐसे खर्चे पकड़ लिए जो चुपचाप पैसा खा रहे थे।",
+      "He did not become rich overnight. But for the first time, his money stopped disappearing.": "वह रातों-रात अमीर नहीं बना। लेकिन पहली बार उसका पैसा गायब होना बंद हुआ।",
+    };
+    return map[text] || text;
+  }
+
+  if (language === "hinglish") {
+    const map = {
+      "Your salary is not small. Your money is leaking. Most people notice it only when the account is almost empty.": "Tumhari salary chhoti nahi hai. Problem ye hai ki paisa dheere-dheere leak ho raha hai. Aur zyada logon ko ye tab samajh aata hai jab account almost empty ho chuka hota hai.",
+      "Salary comes in. For one day, everything feels safe. Then the spending starts quietly.": "Salary aati hai, aur ek din ke liye sab safe lagta hai. Phir spending quietly start ho jaati hai.",
+      "Food orders, subscriptions, shopping, small EMIs... none look dangerous alone.": "Food orders, subscriptions, shopping, chhoti EMIs... akela dekho to kuch bhi dangerous nahi lagta.",
+      "But together, they become a hole in your pocket that never stops growing.": "Lekin ye sab milke pocket me aisa hole bana dete hain jo rukta hi nahi.",
+      "He thought he needed more income. The truth was, he needed a money system.": "Usko laga income badhani padegi. Reality ye thi ki usko ek money system chahiye tha.",
+      "So he tracked seven days of spending and found three silent leaks instantly.": "Usne sirf 7 din ke expenses track kiye, aur turant 3 silent leaks mil gaye.",
+      "He did not become rich overnight. But for the first time, his money stopped disappearing.": "Woh overnight rich nahi bana. Lekin pehli baar uska paisa disappear hona band hua.",
+    };
+    return map[text] || text;
+  }
+
+  return text;
+}
+
+function createFinanceShort(style, nicheName, language = "en") {
+  const niche = NICHES.find((item) => item.name === nicheName) || NICHES[0];
   const topic = randomItem(TOPICS);
   const structure = randomItem(STORY_STRUCTURES);
   const location = randomItem(LOCATIONS);
   const emotion = randomItem(EMOTIONS);
   const moneyObject = randomItem(MONEY_OBJECTS);
   const uniqueVideoId = Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 9);
+  const humanVoice = buildHumanVoiceLines(topic, niche.name, language);
 
-  const baseVisuals = [style, structure, location, emotion + " emotion", moneyObject + " visual theme", CHARACTER_LOCK];
+  const baseVisuals = [style, niche.name + " niche", niche.focus, structure, location, emotion + " emotion", moneyObject + " visual theme", CHARACTER_LOCK];
 
   const scriptLines = [
     {
       time: "0:00 - 0:05",
       beat: "Hook",
-      voice: topic.hook + " Most people notice it only when the account is almost empty.",
+      voice: humanVoice[0],
       image: makePrompt(["Vertical 9:16 opening finance scene", ...baseVisuals, "black stick-figure character staring at phone showing low bank balance", "dramatic shadows", "no text", "no logos"]),
       video: makeSceneVideo("Slow push-in on the black stick character. Phone glow increases. Character freezes in shock. Add subtle money smoke in background."),
     },
     {
       time: "0:05 - 0:10",
       beat: "Salary Moment",
-      voice: "Salary comes in. For one day, everything feels safe. Then the spending starts quietly.",
+      voice: humanVoice[1],
       image: makePrompt(["Vertical 9:16 finance scene", ...baseVisuals, "same black stick-figure character holding phone with salary credited notification glow", "hopeful mood", "no text", "no logos"]),
       video: makeSceneVideo("Notification glow pulses on phone. Character posture changes from happy to unsure. Background slightly zooms."),
     },
     {
       time: "0:10 - 0:15",
       beat: "Money Leak",
-      voice: "Food orders, subscriptions, shopping, small EMIs... none look dangerous alone.",
+      voice: humanVoice[2],
       image: makePrompt(["Vertical 9:16 finance scene", ...baseVisuals, "same black stick-figure character surrounded by food boxes, shopping bags, subscription icons", "coins leaking from wallet", "no brand logos", "no text"]),
       video: makeSceneVideo("Objects slowly orbit around character. Coins fall from wallet one by one. Character looks confused."),
     },
     {
       time: "0:15 - 0:20",
       beat: "Trap Reveal",
-      voice: "But together, they become a hole in your pocket that never stops growing.",
+      voice: humanVoice[3],
       image: makePrompt(["Vertical 9:16 dramatic finance scene", ...baseVisuals, "same black stick-figure character standing over a black hole shaped like a wallet", "money falling into it", "dark cinematic background", "no text"]),
       video: makeSceneVideo("Camera tilts down toward wallet hole. Money falls into darkness. Character steps back in fear."),
     },
     {
       time: "0:20 - 0:25",
       beat: "Realization",
-      voice: "He thought he needed more income. The truth was, he needed a money system.",
+      voice: humanVoice[4],
       image: makePrompt(["Vertical 9:16 emotional finance scene", ...baseVisuals, "same black stick-figure character sitting at table with notebook, calculator, phone, expense list symbols", "warm lamp light", "no text"]),
       video: makeSceneVideo("Character writes in notebook. Calculator buttons tap. Warm light flickers softly. Focus pull from phone to notebook."),
     },
     {
       time: "0:25 - 0:30",
       beat: "Simple Fix",
-      voice: "So he tracked seven days of spending and found three silent leaks instantly.",
+      voice: humanVoice[5],
       image: makePrompt(["Vertical 9:16 finance improvement scene", ...baseVisuals, "same black stick-figure character pointing at notebook with three circled expense leaks", "clean desk", "focused mood", "no readable text", "no logos"]),
       video: makeSceneVideo("Three circles appear as simple shapes on notebook. Character points at them. Camera pushes in. No readable text."),
     },
     {
       time: "0:30 - 0:35",
       beat: "Transformation",
-      voice: "He did not become rich overnight. But for the first time, his money stopped disappearing.",
+      voice: humanVoice[6],
       image: makePrompt(["Vertical 9:16 transformation finance scene", ...baseVisuals, "same black stick-figure character calmly looking at rising simple graph on laptop", "clean room", "hopeful lighting", "no text"]),
       video: makeSceneVideo("Simple graph rises slowly on laptop. Character smiles with simple white mouth. Lighting becomes brighter."),
     },
     {
       time: "0:35 - 0:40",
       beat: "Twist + CTA",
-      voice: topic.twist + " Follow for more simple money stories.",
+      voice: humanVoice[7],
       image: makePrompt(["Vertical 9:16 powerful ending scene", ...baseVisuals, "same black stick-figure character standing on rooftop at sunrise", "city skyline", "money discipline theme", "cinematic hopeful ending", "no text"]),
       video: makeSceneVideo("Slow crane-up from character to sunrise skyline. Character stands confidently. End with clean still frame."),
     },
@@ -382,7 +744,7 @@ function createFinanceShort(style) {
   const uploadPack = {
     title: topic.title + " | 40 Second Money Story",
     description: topic.lesson + DOUBLE_NL + disclaimerText,
-    hashtags: "#Finance #MoneyTips #PersonalFinance #MoneyStory #MoneyMindset #Shorts #FinancialEducation",
+    hashtags: niche.hashtags,
     videoLength: VIDEO_SECONDS + " seconds",
     sceneFormat: TOTAL_SCENES + " scenes x " + SCENE_SECONDS + " seconds each",
   };
@@ -390,6 +752,8 @@ function createFinanceShort(style) {
   return {
     generatedAt: new Date().toLocaleTimeString(),
     uniqueVideoId,
+    niche,
+    language,
     topic,
     scriptLines,
     script,
@@ -422,9 +786,13 @@ function runSelfTests(pack) {
 }
 
 export default function App() {
-  const [style, setStyle] = useState(CHANNEL_STYLES[0]);
+  const savedSettings = getSavedSettings();
+  const savedPack = getSavedPack();
+  const [style, setStyle] = useState(savedSettings?.style || NICHE_VISUAL_STYLES[NICHES[0].name][0]);
+  const [niche, setNiche] = useState(savedSettings?.niche || NICHES[0].name);
+  const [language, setLanguage] = useState(savedSettings?.language || "en");
   const [autoGenerate, setAutoGenerate] = useState(false);
-  const [pack, setPack] = useState(() => createFinanceShort(CHANNEL_STYLES[0]));
+  const [pack, setPack] = useState(() => savedPack || createFinanceShort(savedSettings?.style || NICHE_VISUAL_STYLES[NICHES[0].name][0], savedSettings?.niche || NICHES[0].name, savedSettings?.language || "en"));
   const [copied, setCopied] = useState("");
 
   const selfTests = useMemo(() => runSelfTests(pack), [pack]);
@@ -433,9 +801,21 @@ export default function App() {
 
   useEffect(() => {
     if (!autoGenerate) return undefined;
-    const interval = window.setInterval(() => setPack(createFinanceShort(style)), 5 * 60 * 1000);
+    const interval = window.setInterval(() => {
+      const newPack = createFinanceShort(style, niche, language);
+      setPack(newPack);
+      savePack(newPack);
+    }, 5 * 60 * 1000);
     return () => window.clearInterval(interval);
-  }, [autoGenerate, style]);
+  }, [autoGenerate, style, niche, language]);
+
+  useEffect(() => {
+    saveSettings({ style, niche, language });
+  }, [style, niche, language]);
+
+  useEffect(() => {
+    savePack(pack);
+  }, [pack]);
 
   async function copyText(label, text) {
     try {
@@ -464,20 +844,48 @@ export default function App() {
 
         <section style={STYLES.grid3}>
           <div style={STYLES.panel}>
+            <label style={STYLES.label}>Choose Niche</label>
+            <select value={niche} onChange={(event) => {
+                const selectedNiche = event.target.value;
+                setNiche(selectedNiche);
+                setStyle(NICHE_VISUAL_STYLES[selectedNiche][0]);
+              }} style={STYLES.input}>
+              {NICHES.map((item) => (
+                <option key={item.name} value={item.name}>{item.name}</option>
+              ))}
+            </select>
+          </div>
+
+          <div style={STYLES.panel}>
+            <label style={STYLES.label}>Language</label>
+            <select value={language} onChange={(event) => setLanguage(event.target.value)} style={STYLES.input}>
+              {LANGUAGES.map((item) => (
+                <option key={item.code} value={item.code}>{item.label}</option>
+              ))}
+            </select>
+          </div>
+
+          <div style={STYLES.panel}>
             <label style={STYLES.label}>Visual Style</label>
             <select value={style} onChange={(event) => setStyle(event.target.value)} style={STYLES.input}>
-              {CHANNEL_STYLES.map((item) => (
+              {(NICHE_VISUAL_STYLES[niche] || []).map((item) => (
                 <option key={item} value={item}>{item}</option>
               ))}
             </select>
           </div>
-          <button type="button" onClick={() => setPack(createFinanceShort(style))} style={STYLES.buttonYellow}>Generate New 40-Sec Video</button>
+          <button type="button" onClick={() => {
+            const newPack = createFinanceShort(style, niche, language);
+            setPack(newPack);
+            savePack(newPack);
+          }} style={STYLES.buttonYellow}>Generate New 40-Sec Video</button>
           <button type="button" onClick={() => setAutoGenerate((value) => !value)} style={autoGenerate ? STYLES.buttonRed : STYLES.buttonGreen}>{autoGenerate ? "Stop Auto Generate" : "Start 5-Min Auto Generate"}</button>
         </section>
 
         <div style={STYLES.panel}><span style={{ color: COLORS.green, fontWeight: 900 }}>Status:</span> {statusText} - Last generated: {pack.generatedAt}</div>
 
         <section style={STYLES.grid3}>
+          <InfoCard title="Niche" value={pack.niche.name} />
+          <InfoCard title="Language" value={(LANGUAGES.find((item) => item.code === pack.language) || LANGUAGES[0]).label} />
           <InfoCard title="Topic" value={pack.topic.title} />
           <InfoCard title="Lesson" value={pack.topic.lesson} />
           <InfoCard title="Unique ID" value={pack.uniqueVideoId} />
