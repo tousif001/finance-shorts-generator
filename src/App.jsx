@@ -330,14 +330,7 @@ const UI = {
   select: { width: "100%", background: "#020617", border: "1px solid #334155", color: "white", borderRadius: "16px", padding: "14px", fontSiz
   e: "15px", outline: "none" },
   generate: { width: "100%", height: "100%", minHeight: "82px", border: "none", borderRadius: "24px", background: "linear-grad
-    sectionTop: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", flexWrap: "wrap", marginBottom: "18px" },
-  h2: { margin: 0, fontSize: "28px", fontWeight: 950 },
-  grid: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(310px, 1fr))", gap: "16px" },
-  promptCard: { background: "linear-gradient(180deg, rgba(15,23,42,0.95), rgba(2,6,23,0.95))", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "22px", padding: "18px" },
-  copyBtn: { background: "white", color: "#020617", border: "none", borderRadius: "12px", padding: "10px 13px", fontSize: "13px", fontWeight: 900, cursor: "pointer" },
-  small: { color: "#94a3b8", fontSize: "13px", margin: "4px 0 12px" },
-  text: { color: "#dbeafe", whiteSpace: "pre-wrap", lineHeight: 1.65, fontSize: "15px" },
-};
+    
 
 function getInitialPack() {
   try {
@@ -351,7 +344,16 @@ function getInitialPack() {
   }
 }
 
-export default function App() {
+exportselect: {
+  width: "100%",
+  background: "#020617",
+  border: "1px solid #334155",
+  color: "white",
+  borderRadius: "16px",
+  padding: "14px",
+  fontSize: "15px",
+  outline: "none",
+}, default function App() {
   const [pack, setPack] = useState(() => getInitialPack());
   const [language, setLanguage] = useState(pack.language || "en");
   const [niche, setNiche] = useState(pack.niche || NICHES[0].name);
