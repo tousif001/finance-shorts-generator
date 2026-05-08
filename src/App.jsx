@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 const VIDEO_SECONDS = 40;
 const SCENE_SECONDS = 5;
 const TOTAL_SCENES = 8;
-const STORAGE_KEY = "finance_meta_ai_generator_v6";
+const STORAGE_KEY = "finance_meta_ai_generator_v8";
 const NL = String.fromCharCode(10);
 const DOUBLE_NL = NL + NL;
 
@@ -137,18 +137,288 @@ function copySafeText(text) {
   return Promise.reject(new Error("Clipboard unavailable"));
 }
 
-function makeMetaVideoPrompt(action, emotion) {
+function makeMetaVideoPrompt(action, emotion, camera, background, motionDetail) {
   return [
     "5 second vertical video.",
+    "Same black stick figure guy in every frame.",
+    "Round black head, thin black body, black arms and legs, simple white eyes, simple white mouth.",
     action,
     emotion,
-    "Simple smooth motion.",
-    "2D cartoon style.",
-    "Black stick figure character.",
-    "Same character design.",
-    "Dark finance atmosphere.",
+    background,
+    camera,
+    motionDetail,
+    "2D cartoon finance style.",
+    "Dark cinematic atmosphere.",
     "No text.",
+    "No watermark.",
   ].join(" ");
+}
+
+function getMetaVideoScene(nicheName, sceneNumber, object, location) {
+  const scenes = {
+    "Crypto Finance": [
+      {
+        action: "The guy holds a phone close to his face while a green crypto chart glows on the screen.",
+        background: "Dark bedroom background with faint blue screen light.",
+        camera: "Slow zoom toward the phone and his shocked eyes.",
+        motion: "The chart line moves upward, then the guy leans forward nervously.",
+      },
+      {
+        action: "The guy sits at a desk and taps a laptop as if entering a risky crypto trade.",
+        background: "Messy desk with laptop glow and small coin shapes around it.",
+        camera: "Side angle with a gentle push-in.",
+        motion: "His hand moves to the laptop, then his eyes widen.",
+      },
+      {
+        action: "The guy watches the crypto chart suddenly turn red on his phone.",
+        background: "Dark room with red light reflecting on the wall.",
+        camera: "Small handheld shake to show panic.",
+        motion: "The red chart drops, his shoulders sink, and the phone tilts down.",
+      },
+      {
+        action: "The guy stares at his phone while chat bubble shapes fade away silently.",
+        background: "Night city window behind him with soft neon glow.",
+        camera: "Slow pan from the phone to his worried face.",
+        motion: "The chat bubbles disappear one by one while he freezes.",
+      },
+      {
+        action: "The guy writes three simple risk rules in a notebook beside the laptop.",
+        background: "Desk with laptop, notebook, and dim yellow lamp.",
+        camera: "Top-down camera angle slowly moving closer.",
+        motion: "His hand writes, then he points at the notebook confidently.",
+      },
+      {
+        action: "The guy closes the laptop and takes a deep breath instead of chasing the chart.",
+        background: "Calm dark room with soft blue light.",
+        camera: "Slow zoom out for a calmer mood.",
+        motion: "He closes the laptop, sits back, and relaxes his shoulders.",
+      },
+      {
+        action: "The guy walks away from floating crypto coin symbols fading behind him.",
+        background: "Dark street with digital coin shapes disappearing in the air.",
+        camera: "Back view following shot.",
+        motion: "Coins fade as he walks forward steadily.",
+      },
+      {
+        action: "The guy stands still while a simple red chart falls behind him and then stops.",
+        background: "Dark finance background with subtle red glow.",
+        camera: "Slow dramatic push-in.",
+        motion: "The falling chart slows down, and the guy stands calm at the end.",
+      },
+    ],
+    "Business Stories": [
+      {
+        action: "The guy stands inside a small busy shop and looks at the counter.",
+        background: "Small shop with shelves, boxes, and warm lights.",
+        camera: "Wide shot slowly moving closer.",
+        motion: "Customer shadow shapes pass by while he watches the counter.",
+      },
+      {
+        action: "The guy opens a cash drawer and finds very little money inside.",
+        background: "Shop counter with bills, receipt paper, and delivery boxes.",
+        camera: "Close-up on the drawer, then tilt to his worried face.",
+        motion: "The drawer slides open, his eyes widen, and he freezes.",
+      },
+      {
+        action: "The guy counts bills while delivery boxes pile up beside him.",
+        background: "Small business shop with packages and dim evening light.",
+        camera: "Slow side pan across bills and boxes.",
+        motion: "Bills move through his hand while the boxes wobble slightly.",
+      },
+      {
+        action: "The guy looks stressed at a notebook showing simple expense marks.",
+        background: "Desk with calculator, notebook, and shop lights behind.",
+        camera: "Over-the-shoulder view.",
+        motion: "He taps the calculator and lowers his head in stress.",
+      },
+      {
+        action: "The guy crosses out a loss-making offer on a paper sheet.",
+        background: "Shop wall with simple sale board shapes and papers.",
+        camera: "Medium shot with slight zoom.",
+        motion: "He draws one strong cross mark and stands straighter.",
+      },
+      {
+        action: "The guy checks cashflow on a laptop with a simple rising line.",
+        background: "Clean shop counter with organized bills and notebook.",
+        camera: "Slow push-in on laptop and calm face.",
+        motion: "The line rises gently while he nods.",
+      },
+      {
+        action: "The guy arranges money, notebook, and stock boxes neatly on the counter.",
+        background: "More organized shop with warm lights.",
+        camera: "Smooth left-to-right pan.",
+        motion: "He moves items into order and looks relieved.",
+      },
+      {
+        action: "The guy locks the cash drawer and stands confidently behind the counter.",
+        background: "Small shop at closing time with soft golden light.",
+        camera: "Slow zoom out.",
+        motion: "He closes the drawer, turns around, and smiles slightly.",
+      },
+    ],
+    "Stock Market": [
+      {
+        action: "The guy watches a stock chart rising on his laptop and leans closer.",
+        background: "Dark desk setup with laptop glow and market graph shapes.",
+        camera: "Slow zoom toward laptop screen.",
+        motion: "The green line rises while he gets excited.",
+      },
+      {
+        action: "The guy reacts as one red candle appears on the chart.",
+        background: "Laptop desk with red light spreading across the room.",
+        camera: "Quick small zoom to his nervous face.",
+        motion: "The red candle drops and his eyes open wide.",
+      },
+      {
+        action: "The guy holds his head while the stock graph falls on the laptop.",
+        background: "Dark office desk with phone alerts glowing.",
+        camera: "Slight camera shake.",
+        motion: "Graph falls slowly, and he leans back in regret.",
+      },
+      {
+        action: "The guy writes an investing plan in a notebook beside the laptop.",
+        background: "Clean desk with notebook, laptop, and calm blue light.",
+        camera: "Top-down slow push-in.",
+        motion: "His hand writes, then he closes the notebook calmly.",
+      },
+      {
+        action: "The guy ignores flashing hype alerts on his phone.",
+        background: "Dark room with phone notifications floating as simple shapes.",
+        camera: "Medium shot with slight pan.",
+        motion: "Notifications fade while he looks back at his plan.",
+      },
+      {
+        action: "The guy studies the chart calmly instead of reacting emotionally.",
+        background: "Desk with laptop chart and quiet night window.",
+        camera: "Still camera with slow zoom.",
+        motion: "His eyes move from chart to notebook, then he nods.",
+      },
+      {
+        action: "The guy sits steady while green and red chart lines move behind him.",
+        background: "Minimal dark market background with simple graph lines.",
+        camera: "Slow circular move around the character.",
+        motion: "Graphs move behind him but he stays calm.",
+      },
+      {
+        action: "The guy stands beside a simple rising graph with a calm smile.",
+        background: "Dark finance background with soft green glow.",
+        camera: "Slow zoom out.",
+        motion: "The graph rises slightly and the guy stands confidently.",
+      },
+    ],
+    "Debt & Credit": [
+      {
+        action: "The guy holds a credit card in a dark room and looks unsure.",
+        background: "Dark bedroom with phone payment screen glowing.",
+        camera: "Slow push-in on the card and his eyes.",
+        motion: "His hand shakes slightly while holding the card.",
+      },
+      {
+        action: "The guy looks worried at a payment bill on his phone.",
+        background: "Small apartment desk with bills spread around.",
+        camera: "Close-up on phone, then tilt to face.",
+        motion: "Bill shapes pile up while he looks stressed.",
+      },
+      {
+        action: "The guy watches interest numbers grow as simple shapes around him.",
+        background: "Dark room with red warning glow and paper bills.",
+        camera: "Slow spinning camera effect.",
+        motion: "Number shapes grow larger while he steps back.",
+      },
+      {
+        action: "The guy places the credit card down and pushes it away.",
+        background: "Desk with wallet, bill paper, and phone.",
+        camera: "Side view with slow push-in.",
+        motion: "He slides the card away and exhales.",
+      },
+      {
+        action: "The guy lists his debts in a notebook one by one.",
+        background: "Desk with calculator and small lamp.",
+        camera: "Top-down view.",
+        motion: "His hand writes lines while bills sit nearby.",
+      },
+      {
+        action: "The guy pays one bill on his phone and looks relieved.",
+        background: "Small apartment with soft warm light.",
+        camera: "Slow zoom toward his phone.",
+        motion: "One bill paper fades away after payment.",
+      },
+      {
+        action: "The guy closes his wallet calmly after organizing his money.",
+        background: "Clean desk with fewer bills and a notebook.",
+        camera: "Medium shot with gentle push-in.",
+        motion: "He closes the wallet and sits upright.",
+      },
+      {
+        action: "The guy walks away from floating debt papers fading behind him.",
+        background: "Dark hallway with bills disappearing into shadows.",
+        camera: "Back view tracking shot.",
+        motion: "Debt papers fade as he walks forward.",
+      },
+    ],
+    "Rich Mindset": [
+      {
+        action: "The guy looks at an expensive item on his phone and hesitates.",
+        background: "Dark room with luxury product glow on phone.",
+        camera: "Close-up on phone, then his thinking face.",
+        motion: "His finger pauses before tapping buy.",
+      },
+      {
+        action: "The guy walks past flashy shopping signs without stopping.",
+        background: "Night mall corridor with glowing shop shapes.",
+        camera: "Side tracking shot.",
+        motion: "Signs glow behind him while he keeps walking.",
+      },
+      {
+        action: "The guy places coins into a savings jar on the desk.",
+        background: "Simple room with desk, jar, and soft lamp.",
+        camera: "Close-up on jar.",
+        motion: "Coins drop into the jar one by one.",
+      },
+      {
+        action: "The guy chooses a growing asset graph over a shopping bag.",
+        background: "Split desk scene with laptop graph and shopping bag.",
+        camera: "Slow pan from shopping bag to graph.",
+        motion: "He pushes the bag away and points at the graph.",
+      },
+      {
+        action: "The guy writes a simple wealth plan in a notebook.",
+        background: "Clean desk with notebook and dark blue light.",
+        camera: "Top-down slow zoom.",
+        motion: "His hand writes, then taps the notebook.",
+      },
+      {
+        action: "The guy stands beside a growing asset chart on laptop.",
+        background: "Minimal dark room with laptop glow.",
+        camera: "Medium shot with slow push-in.",
+        motion: "The chart rises slowly while he stands calmly.",
+      },
+      {
+        action: "The guy sits in a simple room looking peaceful, not flashy.",
+        background: "Simple clean room with soft morning light.",
+        camera: "Still camera with gentle zoom out.",
+        motion: "He breathes calmly and looks at his notebook.",
+      },
+      {
+        action: "The guy watches sunrise from a rooftop with confidence.",
+        background: "City rooftop at sunrise with warm sky.",
+        camera: "Slow crane-up movement.",
+        motion: "He stands still as sunlight grows brighter.",
+      },
+    ],
+  };
+
+  const fallback = [
+    {
+      action: "Black stick figure interacts with " + object + " in " + location + ".",
+      background: "Dark finance background.",
+      camera: "Slow zoom in.",
+      motion: "The character moves slightly and looks focused.",
+    },
+  ];
+
+  const list = scenes[nicheName] || fallback;
+  return list[(sceneNumber - 1) % list.length];
 }
 
 function generateHumanScript(niche, language) {
@@ -220,9 +490,13 @@ function createVideoPack(nicheName, language) {
       "No text.",
     ].join(" ");
 
+    const videoScene = getMetaVideoScene(niche.name, index + 1, visuals.object, visuals.location);
     const videoPrompt = makeMetaVideoPrompt(
-      "Black stick figure interacts with " + visuals.object + " in " + visuals.location + ".",
-      "Character looks " + visuals.emotion + "."
+      videoScene.action,
+      "Character looks " + visuals.emotion + ".",
+      videoScene.camera,
+      videoScene.background,
+      videoScene.motion
     );
 
     return {
@@ -268,392 +542,4 @@ function runSelfTests(pack) {
     { name: "Every video prompt uses black stick character", pass: pack.scenes.every((scene) => scene.videoPrompt.includes("Black stick figure")) },
     { name: "Video duration equals 40 seconds", pass: TOTAL_SCENES * SCENE_SECONDS === VIDEO_SECONDS },
   ];
-}
-
-const UI = {
-  page: {
-    minHeight: "100vh",
-    background: "radial-gradient(circle at top left, #1e293b 0, #020617 38%, #000 100%)",
-    color: "white",
-    padding: "22px",
-    fontFamily: "Inter, Arial, sans-serif",
-  },
-  wrap: {
-    maxWidth: "1320px",
-    margin: "0 auto",
-  },
-  hero: {
-    position: "relative",
-    overflow: "hidden",
-    background: "linear-gradient(135deg, rgba(250,204,21,0.22), rgba(15,23,42,0.98), rgba(34,211,238,0.14))",
-    border: "1px solid rgba(255,255,255,0.14)",
-    borderRadius: "34px",
-    padding: "34px",
-    boxShadow: "0 28px 80px rgba(0,0,0,0.55)",
-    marginBottom: "22px",
-  },
-  badge: {
-    display: "inline-block",
-    padding: "8px 12px",
-    borderRadius: "999px",
-    background: "rgba(250,204,21,0.15)",
-    border: "1px solid rgba(250,204,21,0.35)",
-    color: "#fde68a",
-    fontSize: "12px",
-    fontWeight: 900,
-    letterSpacing: "2px",
-    textTransform: "uppercase",
-  },
-  title: {
-    fontSize: "clamp(34px, 6vw, 72px)",
-    lineHeight: 1,
-    margin: "18px 0 12px",
-    fontWeight: 950,
-    letterSpacing: "-2px",
-  },
-  sub: {
-    color: "#cbd5e1",
-    fontSize: "18px",
-    lineHeight: 1.65,
-    maxWidth: "850px",
-  },
-  stats: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))",
-    gap: "12px",
-    marginTop: "26px",
-  },
-  stat: {
-    background: "rgba(2,6,23,0.72)",
-    border: "1px solid rgba(255,255,255,0.1)",
-    borderRadius: "20px",
-    padding: "16px",
-  },
-  controls: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-    gap: "16px",
-    marginBottom: "22px",
-  },
-  glass: {
-    background: "rgba(15,23,42,0.86)",
-    border: "1px solid rgba(255,255,255,0.12)",
-    borderRadius: "24px",
-    padding: "20px",
-    boxShadow: "0 18px 50px rgba(0,0,0,0.35)",
-  },
-  label: {
-    display: "block",
-    color: "#94a3b8",
-    fontSize: "13px",
-    marginBottom: "9px",
-    fontWeight: 800,
-  },
-  select: {
-    width: "100%",
-    background: "#020617",
-    border: "1px solid #334155",
-    color: "white",
-    borderRadius: "16px",
-    padding: "14px",
-    fontSize: "15px",
-    outline: "none",
-  },
-  generate: {
-    width: "100%",
-    height: "100%",
-    minHeight: "82px",
-    border: "none",
-    borderRadius: "24px",
-    background: "linear-gradient(135deg, #facc15, #fb923c)",
-    color: "#111827",
-    fontSize: "18px",
-    fontWeight: 950,
-    cursor: "pointer",
-    boxShadow: "0 18px 40px rgba(250,204,21,0.28)",
-  },
-  section: {
-    background: "rgba(15,23,42,0.82)",
-    border: "1px solid rgba(255,255,255,0.12)",
-    borderRadius: "28px",
-    padding: "22px",
-    marginBottom: "22px",
-    boxShadow: "0 20px 60px rgba(0,0,0,0.35)",
-  },
-  sectionTop: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: "12px",
-    flexWrap: "wrap",
-    marginBottom: "18px",
-  },
-  h2: {
-    margin: 0,
-    fontSize: "28px",
-    fontWeight: 950,
-  },
-  grid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(310px, 1fr))",
-    gap: "16px",
-  },
-  promptCard: {
-    background: "linear-gradient(180deg, rgba(15,23,42,0.95), rgba(2,6,23,0.95))",
-    border: "1px solid rgba(255,255,255,0.1)",
-    borderRadius: "22px",
-    padding: "18px",
-  },
-  copyBtn: {
-    background: "white",
-    color: "#020617",
-    border: "none",
-    borderRadius: "12px",
-    padding: "10px 13px",
-    fontSize: "13px",
-    fontWeight: 900,
-    cursor: "pointer",
-  },
-  small: {
-    color: "#94a3b8",
-    fontSize: "13px",
-    margin: "4px 0 12px",
-  },
-  text: {
-    color: "#dbeafe",
-    whiteSpace: "pre-wrap",
-    lineHeight: 1.65,
-    fontSize: "15px",
-  },
-};
-
-function getInitialPack() {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (!saved) return createVideoPack(NICHES[0].name, "en");
-    const parsed = JSON.parse(saved);
-    if (!parsed || !Array.isArray(parsed.scenes) || parsed.scenes.length !== TOTAL_SCENES) {
-      return createVideoPack(NICHES[0].name, "en");
-    }
-    return parsed;
-  } catch {
-    return createVideoPack(NICHES[0].name, "en");
-  }
-}
-
-export default function App() {
-  const [pack, setPack] = useState(() => getInitialPack());
-  const [language, setLanguage] = useState(pack.language || "en");
-  const [niche, setNiche] = useState(pack.niche || NICHES[0].name);
-  const [copied, setCopied] = useState("");
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(pack));
-  }, [pack]);
-
-  function regenerate() {
-    const newPack = createVideoPack(niche, language);
-    setPack(newPack);
-  }
-
-  async function copyText(label, text) {
-    try {
-      await copySafeText(text);
-      setCopied(label);
-      setTimeout(() => setCopied(""), 1200);
-    } catch {
-      alert("Copy failed. Select the text and copy manually.");
-    }
-  }
-
-  const scriptText = useMemo(() => {
-    return pack.scenes.map((s) => s.time + " | Scene " + s.number + NL + s.voice).join(DOUBLE_NL);
-  }, [pack]);
-
-  const allVoiceovers = useMemo(() => pack.scenes.map((s) => s.voice).join(DOUBLE_NL), [pack]);
-  const allImages = useMemo(() => pack.scenes.map((s) => s.imagePrompt).join(DOUBLE_NL), [pack]);
-  const allVideos = useMemo(() => pack.scenes.map((s) => s.videoPrompt).join(DOUBLE_NL), [pack]);
-  const tests = useMemo(() => runSelfTests(pack), [pack]);
-  const allTestsPassed = tests.every((test) => test.pass);
-
-  return (
-    <div style={UI.page}>
-      <div style={UI.wrap}>
-        <header style={UI.hero}>
-          <span style={UI.badge}>Meta AI Prompt Studio</span>
-          <h1 style={UI.title}>Creative Finance Shorts Generator</h1>
-          <p style={UI.sub}>
-            Generate 40-second shorts with separate script, image prompts, Meta AI video prompts, thumbnail, disclaimer, and upload pack. Each scene is exactly 5 seconds.
-          </p>
-
-          <div style={UI.stats}>
-            <Stat label="Video Length" value={VIDEO_SECONDS + " sec"} color="#facc15" />
-            <Stat label="Scenes" value={TOTAL_SCENES} color="#22d3ee" />
-            <Stat label="Each Scene" value={SCENE_SECONDS + " sec"} color="#34d399" />
-            <Stat label="Saved After Reload" value="Yes" color="#a78bfa" />
-          </div>
-        </header>
-
-        <section style={UI.controls}>
-          <div style={UI.glass}>
-            <label style={UI.label}>Choose Language</label>
-            <select value={language} onChange={(e) => setLanguage(e.target.value)} style={UI.select}>
-              {LANGUAGES.map((l) => (
-                <option key={l.code} value={l.code}>{l.label}</option>
-              ))}
-            </select>
-          </div>
-
-          <div style={UI.glass}>
-            <label style={UI.label}>Choose Niche</label>
-            <select value={niche} onChange={(e) => setNiche(e.target.value)} style={UI.select}>
-              {NICHES.map((n) => (
-                <option key={n.name} value={n.name}>{n.name}</option>
-              ))}
-            </select>
-          </div>
-
-          <button style={UI.generate} onClick={regenerate} type="button">Generate Unique Video Pack</button>
-        </section>
-
-        <section style={UI.section}>
-          <div style={UI.sectionTop}>
-            <div>
-              <h2 style={UI.h2}>{pack.title}</h2>
-              <p style={UI.small}>Niche: {pack.niche} | Language: {pack.language} | Generated: {pack.generatedAt} | ID: {pack.id}</p>
-            </div>
-            <CopyButton copied={copied} label="Title" onClick={() => copyText("Title", pack.title)} />
-          </div>
-        </section>
-
-        <Section title="Built-in Tests" copyLabel="Test Summary" copied={copied} onCopy={() => copyText("Test Summary", tests.map((t) => (t.pass ? "PASS: " : "FAIL: ") + t.name).join(NL))}>
-          <div style={UI.grid}>
-            {tests.map((test) => (
-              <div key={test.name} style={UI.promptCard}>
-                <h3 style={{ margin: 0, color: test.pass ? "#34d399" : "#fb7185", fontSize: 18 }}>{test.pass ? "PASS" : "FAIL"}</h3>
-                <p style={UI.small}>{test.name}</p>
-              </div>
-            ))}
-          </div>
-          <p style={{ ...UI.small, color: allTestsPassed ? "#34d399" : "#fb7185", fontWeight: 900 }}>{allTestsPassed ? "All tests passed" : "Some tests failed"}</p>
-        </Section>
-
-        <Section title="Full 40-Second Script" copyLabel="Script" copied={copied} onCopy={() => copyText("Script", scriptText)}>
-          <div style={UI.promptCard}>
-            <p style={UI.text}>{scriptText}</p>
-          </div>
-        </Section>
-
-        <Section title="Scene Voiceover Lines" copyLabel="All Voiceovers" copied={copied} onCopy={() => copyText("All Voiceovers", allVoiceovers)}>
-          <div style={UI.grid}>
-            {pack.scenes.map((scene) => (
-              <PromptCard
-                key={scene.id}
-                title={"Scene " + scene.number + " Voiceover"}
-                subtitle={scene.time}
-                text={scene.voice}
-                copied={copied}
-                copyLabel={"Voice " + scene.number}
-                onCopy={() => copyText("Voice " + scene.number, scene.voice)}
-              />
-            ))}
-          </div>
-        </Section>
-
-        <Section title="Image Prompts" copyLabel="All Images" copied={copied} onCopy={() => copyText("All Images", allImages)}>
-          <div style={UI.grid}>
-            {pack.scenes.map((scene) => (
-              <PromptCard
-                key={scene.id + "image"}
-                title={"Image Prompt " + scene.number}
-                subtitle={scene.time + " | Text-to-Image"}
-                text={scene.imagePrompt}
-                copied={copied}
-                copyLabel={"Image " + scene.number}
-                onCopy={() => copyText("Image " + scene.number, scene.imagePrompt)}
-              />
-            ))}
-          </div>
-        </Section>
-
-        <Section title="Meta AI Video Prompts" copyLabel="All Videos" copied={copied} onCopy={() => copyText("All Videos", allVideos)}>
-          <div style={UI.grid}>
-            {pack.scenes.map((scene) => (
-              <PromptCard
-                key={scene.id + "video"}
-                title={"Video Prompt " + scene.number}
-                subtitle={scene.time + " | Meta AI Friendly"}
-                text={scene.videoPrompt}
-                copied={copied}
-                copyLabel={"Video " + scene.number}
-                onCopy={() => copyText("Video " + scene.number, scene.videoPrompt)}
-              />
-            ))}
-          </div>
-        </Section>
-
-        <section style={{ ...UI.grid, marginBottom: 22 }}>
-          <MiniSection title="Thumbnail Prompt" text={pack.thumbnailPrompt} label="Thumbnail" copied={copied} onCopy={() => copyText("Thumbnail", pack.thumbnailPrompt)} />
-          <MiniSection title="Disclaimer" text={pack.disclaimer} label="Disclaimer" copied={copied} onCopy={() => copyText("Disclaimer", pack.disclaimer)} />
-          <MiniSection title="Hashtags" text={pack.hashtags} label="Hashtags" copied={copied} onCopy={() => copyText("Hashtags", pack.hashtags)} />
-        </section>
-      </div>
-    </div>
-  );
-}
-
-function Stat({ label, value, color }) {
-  return (
-    <div style={UI.stat}>
-      <p style={{ color: "#94a3b8", margin: 0, fontSize: 13 }}>{label}</p>
-      <p style={{ color, margin: "8px 0 0", fontSize: 28, fontWeight: 950 }}>{value}</p>
-    </div>
-  );
-}
-
-function Section({ title, copyLabel, copied, onCopy, children }) {
-  return (
-    <section style={UI.section}>
-      <div style={UI.sectionTop}>
-        <h2 style={UI.h2}>{title}</h2>
-        <CopyButton copied={copied} label={copyLabel} onClick={onCopy} />
-      </div>
-      {children}
-    </section>
-  );
-}
-
-function PromptCard({ title, subtitle, text, copied, copyLabel, onCopy }) {
-  return (
-    <div style={UI.promptCard}>
-      <div style={UI.sectionTop}>
-        <div>
-          <h3 style={{ margin: 0, color: "#67e8f9", fontSize: 18 }}>{title}</h3>
-          <p style={UI.small}>{subtitle}</p>
-        </div>
-        <CopyButton copied={copied} label={copyLabel} onClick={onCopy} />
-      </div>
-      <p style={UI.text}>{text}</p>
-    </div>
-  );
-}
-
-function MiniSection({ title, text, label, copied, onCopy }) {
-  return (
-    <div style={UI.section}>
-      <div style={UI.sectionTop}>
-        <h2 style={UI.h2}>{title}</h2>
-        <CopyButton copied={copied} label={label} onClick={onCopy} />
-      </div>
-      <p style={UI.text}>{text}</p>
-    </div>
-  );
-}
-
-function CopyButton({ label, copied, onClick }) {
-  return (
-    <button style={UI.copyBtn} onClick={onClick} type="button">
-      {copied === label ? "Copied" : "Copy"}
-    </button>
-  );
 }
